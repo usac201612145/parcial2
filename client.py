@@ -19,11 +19,11 @@ def on_connect(client, userdata, rc):
 
 #Callback que se ejecuta cuando llega un mensaje al topic suscrito
 def on_message(client, userdata, msg):
-    #Se muestra en pantalla informacion que ha llegado
-    
-    if 'Tu' not in listOfStrings :
-        print(str('\n'+msg.payload))
-    #logging.info('\n'+str(msg.payload)) #Colocar remitente
+    strmsg = str(msg.payload)                           #Convierte mensaje en string
+    listOfText = strmsg.split(' ')                      #Divide el mensaje en una lista
+
+    if '201612145' not in listOfText:                   #Comprueba si el mensaje es enviado por el mismo
+        print('\n'+strmsg)                              #Imprime el mensaje si esta comprobacion da como resultado false
 
 #Handler en caso se publique satisfactoriamente en el broker MQTT
 def on_publish(client, userdata, mid): 
@@ -53,9 +53,9 @@ class ClientManagment:
 
     def ClientMessage(self):
         if len(self.destino)<8:
-            client.publish("salas/15/"+str(self.destino), str(self.user)+' >>>: '+str(self.text) , qos = 0, retain = False)  
+            client.publish("salas/15/"+str(self.destino), ' '+str(self.user)+' >>>: '+str(self.text) , qos = 0, retain = False)  
         else:                                                           
-            client.publish("usuarios/15/"+str(self.destino), str(self.user)+' >>>: '+str(self.text) , qos = 0, retain = False)  
+            client.publish("usuarios/15/"+str(self.destino), ' '+str(self.user)+' >>>: '+str(self.text) , qos = 0, retain = False)  
         time.sleep(0.1)  
         return
 
