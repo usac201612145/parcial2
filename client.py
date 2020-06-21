@@ -22,7 +22,7 @@ def on_message(client, userdata, msg):
     strmsg = str(msg.payload)                           #Convierte mensaje en string
     listOfText = strmsg.split(' ')                      #Divide el mensaje en una lista
 
-    if '201612145' not in listOfText:                   #Comprueba si el mensaje es enviado por el mismo
+    if str(usuario) not in listOfText:                   #Comprueba si el mensaje es enviado por el mismo
         print('\n'+strmsg)                              #Imprime el mensaje si esta comprobacion da como resultado false
 
 #Handler en caso se publique satisfactoriamente en el broker MQTT
