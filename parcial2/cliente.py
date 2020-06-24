@@ -15,12 +15,12 @@ from brokerData import *
 # JDBM funcion de manejo de audio por medio de hilo
 def audioManage(state,hora):
     message = 'aplay '+hora+'.wav'
-    logging.debug("AUDIO REPRODUCIDO")
     os.system(message)
+    logging.debug("AUDIO REPRODUCIDO")
 
 # Configuracion inicial de logging
 logging.basicConfig(
-    level = logging.DEBUG, 
+    level = logging.INFO, 
     format = '[%(levelname)s] (%(threadName)-10s) %(message)s'
     )
 
@@ -31,7 +31,7 @@ def on_connect(client, userdata, rc):
 # Handler en caso se publique satisfactoriamente en el broker MQTT
 def on_publish(client, userdata, mid): 
     publishText = "✓✓"
-    logging.debug(publishText)
+    logging.info(publishText)
 
 # PMJO - JCAG - JDBM - funcion de recepcion con condicionantes
 # para el manejo corrrecto dependiendo del topico al que llegue el mensaje
@@ -66,7 +66,7 @@ def on_message(client, userdata, msg):
         print('\n'+strmsg)                  #Imprime el mensaje si esta comprobacion da como resultado false
     
 
-#-----------------------------------------------------------------------------------------------------------V
+#-----------------------------------------------------------------------------------------------------------
 def fileRead(fileName):                                                                         
     archivo = open(fileName,'r') #Abrir el archivo en modo de LECTURA                                              
     data = []                                                                                               #|JDBM
@@ -76,8 +76,8 @@ def fileRead(fileName):
     archivo.close() #Cerrar el archivo al finalizar                                                         
     return data      
 
-#-----------------------------------------------------------------------------------------------------------A    
-#-------------------------------------------------------------------------------------------------------------------------------------V 
+#-----------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------------------------
 # JCAG
 #Clase para el manejo del cliente
 class ClientManagment:
@@ -115,10 +115,10 @@ class ClientManagment:
     def ClientAudio(self, duracion):
         mensajeAudio = 'arecord -d ' + duracion + ' -f U8 -r 8000 ola.wav'
         os.system(mensajeAudio)
-        f = open("ola.wav", "rb")
-        imagestring = f.read()
-        f.close()
-        data= bytearray(imagestring)
+        archivo = open("ola.wav", "rb")
+        audiodata = archivo.read()
+        archivo.close()
+        data= bytearray(audiodata)
         client.publish("audio/15/"+str(self.destino),data, qos = 0, retain = False)
         return
 
@@ -126,7 +126,8 @@ class ClientManagment:
 # PMJO
 # INICIO DE CLIENTE MQTT
 client = mqtt.Client(clean_session=True) 
-client.on_connect = on_connect 
+client.on_connect = on_connect
+client.on_publish = on_publish 
 client.on_message = on_message 
 client.username_pw_set(MQTT_USER, MQTT_PASS) 
 client.connect(host=MQTT_HOST, port = MQTT_PORT) 
@@ -135,21 +136,20 @@ qos = 0
 
 #-----------------------------------------------------------------------------------------------------------
 
-#Se lee el archivo de usuarios, para usar el carne que esta en el archivo                                                                                              
-subs = fileRead('usuarios')                                                                                           
-subs = subs[0]                                                                                                       
+#Se lee el archivo de usuarios, para usar el carne que esta en el archivo                      
+subs = fileRead('usuarios')                                                                   
+subs = subs[0]                                                                               
 usuario = subs[0]          
-usuario = usuario.strip()                                                                                   #|PMJO
+usuario = usuario.strip()                                                                      #|PMJO
 del subs[0]                                                                                                     
-##Subscripcion simple con tupla (topic,qos)                                                                 #|Subscricion topics de archivo de configuracion
-
+#Subscripcion simple con tupla (topic,qos)                                                     #|Subscricion topics de archivo de configuracion
 #Se crea el objeto send de la clase ClienteManagment
 send = ClientManagment(usuario,0,0,0)
 ClientManagment.ClientSubsMsg(send)     
 
 
 #Se lee el archivo de usuarios, para usar las salas que estan en el archivo y suscribirse al topic  
-subs = fileRead('salas')                                                                                           
+subs = fileRead('salas')
 subs = subs[0]  
 newsubs = []
 
@@ -159,7 +159,7 @@ for i in subs:
     element = subs[1]
     newsubs.append(element.strip()) 
 
-#Se realiza la suscripcion a los topics de las salas usan la clase ClienteManagmen                                                                                                                                                                                                                       
+#Se realiza la suscripcion a los topics de las salas usan la clase ClienteManagment
 for i in newsubs:    
     send = ClientManagment(0,0,i,0)                                                                                          
     ClientManagment.ClientSubsSalas(send)                                                       
@@ -173,12 +173,12 @@ try:
     while True:     #Este codigo lo ejecutamos siempre para mantener el menu constante y seleccionar entre texto, audio
                     # ingresar la duracion del audio, salirse del chat, etc.
         
-        formato = input("(Audio/Texto)?: ")                                                                                                                                  
-        destinatario = input("Destino(201612145/S00)?: ")    
+        formato = input("(Audio/Texto): ")                                                                                             
+        destinatario = input("Destino(2016xxxxx/S00): ")    
         pase = True                                                                     
                                                                                                                         
-        if formato == 'Texto' or formato =='texto':                                                                                        #Interfaz de usuario primera version   
-            while pase:                                                                                                          #JCGA   
+        if formato == 'Texto' or formato =='texto':                                                 #Interfaz de usuario primera version
+            while pase:                                                                                             #JCGA   
                 mensaje = input("Tu: ")        
                 if mensaje == 'salir':
                     pase = False     
@@ -196,7 +196,7 @@ try:
             ClientManagment.ClientAudio(send, duracionIn)
             logging.info('Enviando audio')
                                                                                                  
-#----------------------------------------------------------------------------------------------------------------------------A
+#----------------------------------------------------------------------------------------------------------------------------
 
 except KeyboardInterrupt:
     logging.warning("\nDesconectando del broker...")
