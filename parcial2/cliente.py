@@ -14,9 +14,10 @@ from brokerData import *
 
 # JDBM funcion de manejo de audio por medio de hilo
 def audioManage(state,hora):
+    logging.info("Reproduciendo Mensaje de Voz")
     message = 'aplay '+hora+'.wav'
     os.system(message)
-    logging.debug("AUDIO REPRODUCIDO")
+    logging.info("Mensaje de Voz reproducido")
 
 # Configuracion inicial de logging
 logging.basicConfig(
@@ -43,7 +44,7 @@ def on_message(client, userdata, msg):
     if 'audio' in listOfTopic:
         buff = msg.payload
         hora = time()
-        logging.debug("SE RECIBIO UN AUDIO")
+        logging.info("Se recibio un Mensaje de Voz")
         archivo = open(str(hora)+'.wav', 'wb')
         archivo.write(buff)
         archivo.close()
@@ -51,7 +52,7 @@ def on_message(client, userdata, msg):
     # JDBM funcion del hilo que ejecuta la funcion del manejo del audio
     # el unico argumento que se manda es hora que es el timestamp del momento en 
     # que se recibe el archivo
-        t1 = threading.Thread(name = 'Audio Manage',
+        t1 = threading.Thread(name = 'Manejo de Audio',
                         target = audioManage,
                         args = (0,str(hora)),
                         daemon = False
@@ -113,6 +114,10 @@ class ClientManagment:
     # PMJO envio de audio convirtiendo la informacion del archivo a bytearray 
     # para asegurar el envio correcto
     def ClientAudio(self, duracion):
+        if duracion>'30':
+            duracion = '30'
+            logging.warning('No se puede mandar archivos de mas de 30s, se enviara de 30s')
+        logging.debug(duracion)
         mensajeAudio = 'arecord -d ' + duracion + ' -f U8 -r 8000 ola.wav'
         os.system(mensajeAudio)
         archivo = open("ola.wav", "rb")
