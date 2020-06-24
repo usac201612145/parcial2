@@ -114,7 +114,7 @@ class ClientManagment:
     # PMJO envio de audio convirtiendo la informacion del archivo a bytearray 
     # para asegurar el envio correcto
     def ClientAudio(self, duracion):
-        if duracion>'30':
+        if int(duracion)>30:
             duracion = '30'
             logging.warning('No se puede mandar archivos de mas de 30s, se enviara de 30s')
         logging.debug(duracion)
